@@ -32,11 +32,15 @@ class JapanPostalCode
   end
 
   def lookup_by_code(postal_code, no_size_limit = nil)
-    if String(postal_code).size < 3
+    return [] if postal_code.nil?
+
+    postal_code = ascii_number(postal_code)
+
+    if postal_code.size < 3
       postal_code = sprintf('%03d', postal_code)
     end
 
-    numeric_postal_code = ascii_number(postal_code)
+    numeric_postal_code = postal_code.to_i
 
     if postal_code.size == 7
       # 7-digit codes map to an array of arrays of names
@@ -88,11 +92,19 @@ class JapanPostalCode
     end
   end
 
-  def ascii_number(postal_code)
-    postal_code = String(postal_code)
-    return postal_code.to_i if postal_code.ascii_only?
+  JA_EN_MAPPING = {
+    '　' => ' ',
+    '０-９' => '0-9',
+    'ａ-ｚ' => 'a-z',
+    'Ａ-Ｚ' => 'A-Z',
+    'ー' => '-',
+  }
 
-    NKF.nkf('-X -w', postal_code).tr(%Q(０-９ａ-ｚＡ-Ｚ), %Q(0-9a-zA-Z)).to_i
+  def ascii_number(postal_code)
+    ascii = NKF.nkf('-X -w', String(postal_code)).tr(
+      JA_EN_MAPPING.keys.join(''), JA_EN_MAPPING.values.join('')
+    )
+    ascii.gsub('-', '').strip
   end
 
 end

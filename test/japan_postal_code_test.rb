@@ -22,19 +22,19 @@ class JapanPostalCodeTest < Minitest::Unit::TestCase
 
   def test_ascii_number
     codes = JapanPostalCode.new
-    assert_equal(12345, codes.send(:ascii_number, '12345'),
+    assert_equal(12345, codes.send(:ascii_number, '12345').to_i,
       "Should handle ascii text number")
-    assert_equal(12345, codes.send(:ascii_number, '１２３４５'),
+    assert_equal(12345, codes.send(:ascii_number, '１２３４５').to_i,
       "Should handle ja text number")
-    assert_equal(123, codes.send(:ascii_number, '00123'),
+    assert_equal(123, codes.send(:ascii_number, '00123').to_i,
       "Should remove front prefix zeroes")
-    assert_equal(123, codes.send(:ascii_number, '００１２３'),
+    assert_equal(123, codes.send(:ascii_number, '００１２３').to_i,
       "Should remove ja front prefix zeroes")
-    assert_equal(12300, codes.send(:ascii_number, '12300'),
+    assert_equal(12300, codes.send(:ascii_number, '12300').to_i,
       "Should not remove suffix zeroes")
-    assert_equal(12300, codes.send(:ascii_number, '１２３００'),
+    assert_equal(12300, codes.send(:ascii_number, '１２３００').to_i,
       "Should not remove ja suffix zeroes")
-    assert_equal(12345, codes.send(:ascii_number, '１2３4５'),
+    assert_equal(12345, codes.send(:ascii_number, '１2３4５').to_i,
       "Should handle mixed ascii and ja")
   end
 
@@ -43,6 +43,16 @@ class JapanPostalCodeTest < Minitest::Unit::TestCase
       "Should return code, prefecture, city, and area for Sakuragokacho")
     assert_equal([["0010000", "北海道", "札幌市北区", "以下に掲載がない場合"]], NATIONAL.lookup_by_code('0010000'),
       "Should return code, prefecture, city, and area for Sapporo Kita-ku")
+  end
+
+  def test_lookup_by_code_new_7_digit_code_ignores_hyphens_and_spaces_ascii
+    assert_equal([['1500031', '東京都', '渋谷区', '桜丘町']], NATIONAL.lookup_by_code(' 150-0031 '),
+      "Should return code, prefecture, city, and area for Sakuragokacho")
+  end
+
+  def test_lookup_by_code_new_7_digit_code_ignores_hyphens_and_spaces_ja
+    assert_equal([['1500031', '東京都', '渋谷区', '桜丘町']], NATIONAL.lookup_by_code('　１５０ー００３１　'),
+      "Should return code, prefecture, city, and area for Sakuragokacho")
   end
 
   def test_cities_are_not_mixed_within_3_digit_code
