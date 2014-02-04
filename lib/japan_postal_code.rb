@@ -4,6 +4,7 @@
 # see bottom of generator.rb file for more info about listing
 
 require 'csv'
+require 'nkf'
 
 class JapanPostalCode
 
@@ -91,20 +92,7 @@ class JapanPostalCode
     postal_code = String(postal_code)
     return postal_code.to_i if postal_code.ascii_only?
 
-    # brute force simple lookup for ja numbers
-    full_byte_numbers = {
-      '０' => '0', '１' => '1', '２' => '2', '３' => '3', '４' => '4',
-      '５' => '5', '６' => '6', '７' => '7', '８' => '8', '９' => '9',
-    }
-    digits = []
-    postal_code.split('').each do |char|
-      if char.ascii_only?
-        digits << char
-      else
-        digits << full_byte_numbers[char] || ''
-      end
-    end
-    digits.join('').to_i
+    NKF.nkf('-X -w', postal_code).tr(%Q(０-９ａ-ｚＡ-Ｚ), %Q(0-9a-zA-Z)).to_i
   end
 
 end
