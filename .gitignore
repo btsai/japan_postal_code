@@ -1,0 +1,4 @@
+.DS_Store
+lib/japan_postal_code/data/*
+!lib/japan_postal_code/data/test.marshal.gz
+!lib/japan_postal_code/data/national.marshal.gz
