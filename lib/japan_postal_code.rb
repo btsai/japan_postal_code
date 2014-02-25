@@ -19,14 +19,31 @@ class JapanPostalCode
     true
   end
 
+  def self.search(postal_code)
+    if Rails.env.test?
+      searcher = JapanPostalCode.new.load('metro')
+    else
+      searcher = Rails.cache.fetch('japan_postal_codes'){
+        # if not in memcache, load it once
+        JapanPostalCode.new.load('metro')
+      }
+    end
+    searcher.lookup_by_code(postal_code)
+  end
+
   attr_reader :mapping
 
   def load(region_name)
     JapanPostalCode.validate_region_name!(region_name)
 
+    time = Time.now
     data_folder = File.dirname(__FILE__) + '/japan_postal_code/data'
     filepath = File.join(data_folder, region_name) + '.marshal'
     @mapping = Marshal.load(`gzip -dc #{filepath}`.chomp)
+
+    message = "=> Loaded JapanPostalCode in #{Time.now - time}s"
+    Rails.logger.info(message)
+    puts message if Rails.env.development?
 
     return self
   end
